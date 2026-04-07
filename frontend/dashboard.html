@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điều khiển - DCGLearn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Các CSS bổ sung riêng cho Dashboard dựa trên nền tảng của style.css */
+        .dashboard-header {
+            padding: 40px 0 20px 0;
+        }
+
+        .welcome-banner {
+            background: var(--white);
+            padding: 30px;
+            border-radius: var(--radius);
+            border: 1px solid #F0F0F0;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .role-badge {
+            background: var(--primary-blue);
+            color: var(--white);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 12px;
+            background: var(--light-bg);
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        /* Tùy chỉnh user trên Navbar */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-name-display {
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 15px;
+        }
+
+        .btn-logout {
+            background: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #ff4d4f;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>DCG<span>Learn</span></span>
+            </div>
+            <nav style="display: flex; align-items: center; gap: 25px;">
+                <a href="#">Thư viện</a>
+                
+                <div class="user-profile">
+    <div class="user-dropdown">
+        <button class="user-dropbtn" id="userMenuBtn">
+            <i class="far fa-user-circle"></i>
+            <span id="navUserName">username</span>
+            <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
+        </button>
+        <div class="dropdown-content" id="userDropdown">
+            <a href="#"><i class="fas fa-book-open"></i> Khóa học của tôi</a>
+            <a href="#"><i class="far fa-newspaper"></i> Tin tức</a>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 5px 0;">
+            <a href="#" id="logoutBtn" style="color: #ff4d4f;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </div>
+    </div>
+</div>
+    </header>
+
+    <main>
+        <section class="dashboard-header">
+            <div class="container">
+                <div class="welcome-banner">
+                    <div>
+                        <h1 style="font-size: 28px; margin-bottom: 8px;">Chào mừng trở lại, <span id="welcomeName" style="color: var(--primary-blue);">Người dùng</span>! 👋</h1>
+                        <p style="color: var(--text-gray);">Sẵn sàng để tiếp tục lộ trình học tập của bạn hôm nay chưa?</p>
+                    </div>
+                    <div>
+                        <span id="userRoleBadge" class="role-badge">Học viên</span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-book-reader"></i></div>
+                        <div>
+                            <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 5px;">Khóa học tham gia</p>
+                            <h3 id="statCourses" style="font-size: 24px;">2</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-tasks"></i></div>
+                        <div>
+                            <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 5px;">Bài tập hoàn thành</p>
+                            <h3 id="statQuizzes" style="font-size: 24px;">5</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: #f1c40f;"><i class="fas fa-star"></i></div>
+                        <div>
+                            <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 5px;">Điểm trung bình</p>
+                            <h3 id="statGrade" style="font-size: 24px;">9.0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="courses" style="padding-top: 0;">
+            <div class="container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2 class="section-title" style="margin-bottom: 0;">Khóa học đang học</h2>
+                </div>
+
+                <div class="course-grid" id="courseContainer">
+    <div class="course-card">
+        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=500&auto=format&fit=crop');"></div>
+        <div class="card-body">
+            <span class="tag" style="background: #e3f2fd; color: #1e88e5;">Toán học</span>
+            <h3>Toán học</h3>
+            <p><i class="fas fa-book"></i> Giải tích & Hình học không gian</p>
+            <div class="card-footer">
+                <button class="btn-outline">Tiếp tục học</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="course-card">
+        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1543165796-5426273eaab3?q=80&w=500&auto=format&fit=crop');"></div>
+        <div class="card-body">
+            <span class="tag" style="background: #f0f4f8; color: #334e68;">Ngoại ngữ</span>
+            <h3>Tiếng Anh</h3>
+            <p><i class="fas fa-globe"></i> Global Success - Kết nối tri thức</p>
+            <div class="card-footer">
+                <button class="btn-outline">Tiếp tục học</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="course-card">
+        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=500&auto=format&fit=crop');"></div>
+        <div class="card-body">
+            <span class="tag" style="background: #fff9db; color: #f08c00;">Khoa học</span>
+            <h3>Vật lí</h3>
+            <p><i class="fas fa-atom"></i> Dao động & Sóng điện từ</p>
+            <div class="card-footer">
+                <button class="btn-outline">Tiếp tục học</button>
+            </div>
+        </div>
+    </div>
+
+
+
+            </div>
+        </section>
+    </main>
+
+ <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. KIỂM TRA QUYỀN TRUY CẬP (AUTH GUARD)
+    const userStr = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+
+    // Bước A: Kiểm tra xem đã đăng nhập chưa
+    if (!userStr || !token) {
+        window.location.href = 'index.html';
+        return; 
+    }
+
+    let user;
+    try {
+        user = JSON.parse(userStr);
+
+        // Bước B: Kiểm tra vai trò (Role)
+        const userRole = user.role ? user.role.trim() : "";
+
+        if (userRole !== 'Học viên') {
+            alert("Bạn không có quyền truy cập vào khu vực dành cho Học viên.");
+            window.location.href = '/';
+            return;
+        }
+    } catch (e) {
+        console.error("Lỗi dữ liệu người dùng:", e);
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+    }
+    // 2. LẤY CÁC PHẦN TỬ GIAO DIỆN
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const navUserName = document.getElementById('navUserName');
+    const welcomeName = document.getElementById('welcomeName');
+
+    // 3. HIỂN THỊ THÔNG TIN NGƯỜI DÙNG
+    const displayName = user.name || (user.email ? user.email.split('@')[0] : 'Học viên');
+    if (navUserName) navUserName.textContent = displayName;
+    if (welcomeName) welcomeName.textContent = displayName;
+
+    // 4. XỬ LÝ DROPDOWN MENU
+    if (userMenuBtn && userDropdown) {
+        userMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+    }
+
+    // Đóng menu khi click ra ngoài
+    window.addEventListener('click', (e) => {
+        if (userDropdown && userDropdown.classList.contains('show')) {
+            if (!userMenuBtn.contains(e.target)) {
+                userDropdown.classList.remove('show');
+            }
+        }
+    });
+
+    // 5. XỬ LÝ ĐĂNG XUẤT
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'index.html';
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

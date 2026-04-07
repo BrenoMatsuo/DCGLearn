@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - DCGLearn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page"> 
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>DCG<span>Learn</span></span>
+            </div>
+            <h2>Tạo tài khoản mới</h2>
+            <p>Khám phá kho tàng kiến thức cùng DCGLearn</p>
+        </div>
+
+        <div class="auth-card">
+            <form id="registerForm">
+                <div class="input-group">
+                    <label for="name">Họ và tên</label>
+                    <div class="input-wrapper">
+                        <i class="far fa-user"></i>
+                        <input type="text" id="name" placeholder="Ví dụ: Nguyễn Văn A" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Địa chỉ Email</label>
+                    <div class="input-wrapper">
+                        <i class="far fa-envelope"></i>
+                        <input type="email" id="email" placeholder="name@school.edu.vn" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="role">Bạn là?</label>
+                    <div class="input-wrapper select-wrapper"> 
+                        <i class="fas fa-user-tag"></i>
+                        <select id="role" required>
+                            <option value="" disabled selected>Chọn vai trò</option>
+                            <option value="Học viên">Học viên (Người học)</option>
+                            <option value="Giảng viên">Giảng viên (Người dạy)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Mật khẩu</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Tối thiểu 6 ký tự" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnSubmit" class="btn-primary-full">
+                    Đăng ký tài khoản
+                </button>
+
+                <div id="message" style="margin-top: 15px; min-height: 40px;"></div>
+
+                <p class="auth-switch">
+                    Đã có tài khoản? <a href="/login">Đăng nhập ngay</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btnSubmit');
+            const msgDiv = document.getElementById('message');
+            
+            // 1. Thu thập dữ liệu
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const role = document.getElementById('role').value;
+            const password = document.getElementById('password').value;
+
+            // 2. Hiệu ứng chờ
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            msgDiv.innerHTML = '';
+
+            try {
+                // 3. Gửi yêu cầu đến API Backend
+                // Lưu ý: Dùng đường dẫn tương đối '/api/...' để trình duyệt tự kết nối đến đúng Port của server
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, role, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Thành công
+                    msgDiv.innerHTML = `
+                        <div style="color: #155724; background-color: #d4edda; padding: 12px; border-radius: 8px; border: 1px solid #c3e6cb;">
+                            <i class="fas fa-check-circle"></i> ${result.message || 'Đăng ký thành công! Đang chuyển hướng...'}
+                        </div>`;
+                    
+                    // Xóa form và chuyển sang trang login sau 1.5s
+                    document.getElementById('registerForm').reset();
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1500);
+                } else {
+                    // Thất bại (Lỗi logic từ server)
+                    msgDiv.innerHTML = `
+                        <div style="color: #721c24; background-color: #f8d7da; padding: 12px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                            <i class="fas fa-exclamation-circle"></i> ${result.message || 'Email đã được sử dụng!'}
+                        </div>`;
+                    btn.disabled = false;
+                    btn.innerText = 'Đăng ký tài khoản';
+                }
+            } catch (error) {
+                // Lỗi kết nối (Server chưa bật hoặc sai port)
+                console.error("Fetch Error:", error);
+                msgDiv.innerHTML = `
+                    <div style="color: #721c24; background-color: #f8d7da; padding: 12px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                        <i class="fas fa-wifi-slash"></i> Không thể kết nối tới server. Hãy kiểm tra 'node server.js'
+                    </div>`;
+                btn.disabled = false;
+                btn.innerText = 'Đăng ký tài khoản';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "courses": [
+    {
+      "id": 1,
+      "title": "Toán học lớp 12",
+      "instructor": "Thầy Nguyễn Văn A",
+      "description": "Ôn luyện kiến thức trọng tâm giải tích và hình học.",
+      "image": "https://img.freepik.com/free-vector/math-background_23-2148145213.jpg"
+    },
+    {
+      "id": 2,
+      "title": "Vật lý đại cương",
+      "instructor": "Cô Trần Thị B",
+      "description": "Khám phá các định luật vật lý thú vị qua thí nghiệm.",
+      "image": "https://img.freepik.com/free-vector/physics-concept-illustration_114360-1201.jpg"
+    }
+  ]
+}

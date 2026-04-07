@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCGLearn - Hệ thống học tập trực tuyến</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-wrapper">
+                    <div class="hero-content">
+                        <div class="logo" style="margin-bottom: 20px;">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span>DCG<span>Learn</span></span>
+                        </div>
+                        <p>Hệ thống quản lý học tập trực tuyến </p>
+                        <h1>Năng động. Sáng tạo. Phát triển bản thân.</h1>
+                       
+                        
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Học liệu đa dạng & phong phú</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Tương tác với giảng viên nhanh chóng</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Theo dõi lộ trình học tập cá nhân</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-login-card">
+                        <h3>Đăng nhập hệ thống</h3>
+                        <form id="heroLoginForm">
+                            <div class="input-group">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="heroEmail" placeholder="Email của bạn" required>
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="heroPassword" placeholder="Mật khẩu" required>
+                            </div>
+                            <button type="submit" id="btnHeroLogin" class="btn-primary" style="width: 100%;">Truy cập ngay</button>
+                            
+                            <div id="loginMessage" style="margin-top: 15px; font-size: 14px;"></div>
+                        </form>
+                        <div class="form-footer">
+                            Chưa có tài khoản? <a href="register.html">Đăng ký tại đây</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container" style="text-align: center; padding: 40px 0; color: var(--text-gray); font-size: 14px;">
+            <p>&copy; 2026 <strong>DCGLearn</strong>. Hệ thống quản lý học tập trực tuyến.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.getElementById('heroLoginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('heroEmail').value;
+        const password = document.getElementById('heroPassword').value;
+        const btn = document.getElementById('btnHeroLogin');
+        const msgDiv = document.getElementById('loginMessage');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        msgDiv.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // 1. Lưu Token và thông tin User vào localStorage
+                localStorage.setItem('token', result.token);
+                localStorage.setItem('user', JSON.stringify(result.user));
+
+                msgDiv.style.color = '#10b981';
+                msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Đăng nhập thành công!';
+
+                // 2. LOGIC CHUYỂN HƯỚNG DỰA TRÊN VAI TRÒ (ROLE)
+                setTimeout(() => {
+                    const userRole = (result.user.role || "").trim();
+                    
+                    if (userRole === 'Giảng viên') {
+                        window.location.href = '/dashboard-teacher';
+                    } else if (userRole === 'Học viên') {
+                        window.location.href = '/dashboard';
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
+                }, 800);
+            } else {
+                msgDiv.style.color = '#ef4444';
+                msgDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${result.message}`;
+                btn.disabled = false;
+                btn.innerText = 'Truy cập ngay';
+            }
+        } catch (error) {
+            msgDiv.style.color = '#ef4444';
+            msgDiv.innerHTML = '<i class="fas fa-wifi-slash"></i> Không thể kết nối đến máy chủ!';
+            btn.disabled = false;
+            btn.innerText = 'Truy cập ngay';
+        }
+    });
+
+    // 3. Tự động kiểm tra khi load trang (Auto-login)
+    window.onload = () => {
+        const userStr = localStorage.getItem('user');
+        const token = localStorage.getItem('token');
+        
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                const userRole = (user.role || "").trim();
+                
+                if (userRole === 'Giảng viên') {
+                    window.location.href = '/dashboard-teacher';
+                } else if (userRole === 'Học viên') {
+                    window.location.href = '/dashboard';
+                }
+            } catch (e) {
+                localStorage.clear();
+            }
+        }
+    };
+</script>
+</body>
+</html>

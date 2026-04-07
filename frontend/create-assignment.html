@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao bài tập mới - DCGLearn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background-color: #F8FAFC; }
+        .assignment-container {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* Cột trái rộng hơn để viết nội dung */
+            gap: 30px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 10px;
+        }
+        .input-wrapper input, .input-wrapper select, .input-wrapper textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 12px;
+            outline: none;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        .input-wrapper input:focus, .input-wrapper textarea:focus {
+            border-color: var(--primary-blue);
+        }
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            border-top: 1px solid #F1F5F9;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>DCG<span>Learn</span></span>
+            </div>
+            <nav class="main-nav">
+                <a href="/dashboard-teacher">Bảng điều khiển</a>
+                <a href="#" class="active">Giao bài tập</a>
+                <a href="#">Khóa học</a>
+            </nav>
+            <div class="user-control">
+                <span id="navUserName" style="font-weight: 600; margin-right: 10px;">Giảng viên</span>
+                <button class="logout-icon-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="assignment-container">
+            <div style="margin-bottom: 25px;">
+                <h2 style="font-weight: 800; color: var(--text-dark);">Giao bài tập mới</h2>
+                <p style="color: var(--text-gray);">Học viên sẽ nhận được thông báo sau khi bài tập được xuất bản.</p>
+            </div>
+
+            <form id="assignmentForm">
+                <div class="form-grid">
+                    <div class="form-left">
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <label>Tiêu đề bài tập *</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="asmTitle" placeholder="VD: Bài tập về nhà Chương 1 - Đạo hàm" required>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Hướng dẫn chi tiết *</label>
+                            <div class="input-wrapper">
+                                <textarea id="asmContent" rows="12" placeholder="Nhập yêu cầu bài tập, các câu hỏi hoặc đường dẫn tài liệu tham khảo..." required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-right">
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <label>Chọn khóa học *</label>
+                            <div class="input-wrapper">
+                                <select id="asmCourse" required>
+                                    <option value="">-- Chọn khóa học --</option>
+                                    </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group" style="margin-bottom: 20px;">
+                            <label>Hạn nộp (Deadline) *</label>
+                            <div class="input-wrapper">
+                                <input type="datetime-local" id="asmDeadline" required>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Thang điểm tối đa</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="asmPoints" value="10">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-outline" onclick="history.back()">Hủy</button>
+                    <button type="submit" class="btn-primary" id="btnSubmitAsm">Xuất bản bài tập</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('token');
+            const courseSelect = document.getElementById('asmCourse');
+
+            // 1. Load danh sách khóa học của giảng viên này để chọn
+            async function loadMyCourses() {
+                try {
+                    const response = await fetch('/api/courses'); // Hoặc API lọc theo instructor
+                    const courses = await response.json();
+                    
+                    courses.forEach(course => {
+                        if(course.instructor === user.name) {
+                            const option = document.createElement('option');
+                            option.value = course.code;
+                            option.textContent = course.title;
+                            courseSelect.appendChild(option);
+                        }
+                    });
+                } catch (error) {
+                    console.error("Lỗi tải khóa học:", error);
+                }
+            }
+            loadMyCourses();
+
+            // 2. Xử lý gửi bài tập lên API
+            document.getElementById('assignmentForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btnSubmit = document.getElementById('btnSubmitAsm');
+
+                const assignmentData = {
+                    title: document.getElementById('asmTitle').value,
+                    content: document.getElementById('asmContent').value,
+                    courseCode: courseSelect.value,
+                    deadline: document.getElementById('asmDeadline').value,
+                    points: document.getElementById('asmPoints').value,
+                    instructor: user.name,
+                    createdAt: new Date().toISOString()
+                };
+
+                try {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerText = "Đang gửi...";
+
+                    const response = await fetch('/api/assignments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(assignmentData)
+                    });
+
+                    if (response.ok) {
+                        alert("Giao bài tập thành công!");
+                        window.location.href = '/dashboard-teacher';
+                    } else {
+                        alert("Có lỗi xảy ra khi lưu bài tập.");
+                    }
+                } catch (error) {
+                    alert("Không thể kết nối server.");
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "Xuất bản bài tập";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

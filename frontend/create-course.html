@@ -3,18 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tạo khóa học mới - DCGTeach</title>
+    <title id="pageTitle">Tạo khóa học mới - DCGLearn</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* --- CSS BỔ SUNG RIÊNG CHO TRANG NÀY (Để giống ảnh mẫu) --- */
-        
-        /* Đảm bảo body có màu nền xám nhạt như ảnh */
         body { background-color: #F8FAFC; }
-
-        /* Khung chứa chính (màu trắng, bo góc) */
         .editor-container {
             background: var(--white);
             padding: 40px;
@@ -23,317 +18,263 @@
             margin-top: 30px;
             margin-bottom: 50px;
         }
-
-        /* Tiêu đề trang */
-        .page-header {
-            margin-bottom: 30px;
-            border-bottom: 1px solid #F1F5F9;
-            padding-bottom: 15px;
-        }
-        .page-header h2 { font-size: 24px; font-weight: 800; color: var(--text-dark); }
-        .page-header p { color: var(--text-gray); font-size: 15px; margin-top: 5px; }
-
-        /* Bố cục 2 cột cho Form (Giống ảnh 1) */
-        .form-grid {
+        .form-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px; /* Khoảng cách giữa 2 cột */
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
         }
-
-        /* Tùy chỉnh nhãn (label) cho input-group */
-        .input-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 700; /* Đậm hơn */
-            color: #475569;
-            margin-bottom: 10px;
-        }
-
-        /* Tùy chỉnh input để có padding trái nhỏ hơn (vì không dùng icon bên trong như ảnh mẫu) */
-        .input-wrapper input,
-        .input-wrapper select,
-        .input-wrapper textarea {
-            padding: 12px 15px; /* Xóa padding-left 45px cũ */
-        }
-
-        /* Khu vực Dropdown (Khối lớp) */
-        .select-wrapper::after {
-            content: '\f078'; /* Icon chevron-down của FontAwesome */
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 15px;
-            color: #94A3B8;
-            pointer-events: none;
-        }
-
-        /* Khu vực Upload ảnh (Giống ảnh 1) */
-        .image-upload-area {
-            border: 2px dashed #E2E8F0; /* Viền đứt nét */
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-            background-color: #FBFDFF;
+        .input-group-vertical {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 15px;
+            gap: 8px;
+            margin-bottom: 20px;
         }
-        .image-upload-area:hover {
+        label { font-weight: 600; color: var(--text-dark); font-size: 14px; }
+        input, select, textarea {
+            padding: 12px 16px;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        input:focus, textarea:focus {
+            outline: none;
             border-color: var(--primary-blue);
-            background-color: var(--light-bg);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        .image-upload-area i {
-            font-size: 40px;
-            color: var(--primary-blue);
+        .image-upload-box {
+            border: 2px dashed #E2E8F0;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #F8FAFC;
         }
-        .image-upload-area p {
-            color: var(--text-gray);
-            font-size: 14px;
-            line-height: 1.4;
+        .image-upload-box:hover { border-color: var(--primary-blue); background: #F1F5F9; }
+        #imgPreview {
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
         }
-        .image-upload-area p span {
-            color: var(--primary-blue);
-            font-weight: 700;
-        }
-
-        /* Nút bấm ở cuối form (Căn phải) */
-        .form-actions {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #F1F5F9;
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-        }
-
-        /* Responsive cho mobile */
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; gap: 0; }
-            .auth-card { padding: 20px; }
+        /* CSS để chia đôi dòng Mã Code và Khối lớp */
+        .form-row-half {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
     </style>
 </head>
 <body>
 
     <header>
-    <div class="container navbar">
-        <div class="logo">
-            <i class="fas fa- graduation-cap"></i>
-            <span>DCG<span>Teach</span></span>
-        </div>
-
-        <nav class="nav-menu">
-            <a href="/dashboard-teacher">Bảng điều khiển</a>
-            <a href="#" class="active">Khóa học của tôi</a>
-            <a href="#">Thư viện</a>
-            <a href="#">Học viên</a>
-        </nav>
-
-        <div class="user-nav">
-            <div class="user-info">
-                <img src="https://via.placeholder.com/35" alt="Avatar" class="nav-avatar">
-                <span id="navUserName">Giảng viên</span>
+        <div class="container navbar">
+            <div class="logo" onclick="window.location.href='dashboard-teacher.html'" style="cursor:pointer">
+                <i class="fas fa-graduation-cap"></i>
+                <span>DCG<span>Learn</span></span>
             </div>
-            <button class="btn-logout-icon" id="logoutBtn" title="Đăng xuất">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
+            <nav style="display: flex; align-items: center; gap: 25px;">
+                <a href="manage-courses.html">Quản lý khóa học</a>
+                <a href="dashboard-teacher.html">Bảng tin</a>
+                <span style="color: #cbd5e1;">|</span>
+                <span id="navUserName" style="font-weight: 600; color: var(--primary-blue);">Giảng viên</span>
+            </nav>
         </div>
-    </div>
-</header>
+    </header>
 
     <main class="container">
-        <div style="margin-top: 20px; font-size: 14px; color: var(--text-gray);">
-            <a href="#" style="text-decoration: none; color: var(--text-gray);">Quản lý</a> / 
-            <span style="color: var(--text-dark); font-weight: 600;">Tạo khóa học</span>
-        </div>
-
         <div class="editor-container">
-            <div class="page-header">
-                <h2>Tạo khóa học mới</h2>
-                <p>Vui lòng điền đầy đủ các thông tin bắt đầu bằng dấu (*)</p>
-            </div>
+            <h2 id="mainHeading" style="font-weight: 800; font-size: 28px; margin-bottom: 10px;">Tạo khóa học mới</h2>
+            <p style="color: #64748b; margin-bottom: 30px;">Điền đầy đủ thông tin bên dưới để xuất bản khóa học của bạn.</p>
 
-            <form id="createCourseForm">
-                <div class="form-grid">
-                    <div>
-                        <div class="input-group">
-                            <label for="courseName">Tên khóa học <span style="color: #ff4d4f;">*</span></label>
-                            <div class="input-wrapper">
-                                <input type="text" id="courseName" placeholder="Ví dụ: Toán học lớp 12 - Ôn thi THPT" required>
+            <form id="courseForm">
+                <div class="form-layout">
+                    <div class="form-main">
+                        <div class="input-group-vertical">
+                            <label>Tên khóa học *</label>
+                            <input type="text" id="courseName" placeholder="Ví dụ: Toán học giải tích 12" required>
+                        </div>
+
+                        <div class="input-group-vertical">
+                            <label>Mô tả ngắn gọn *</label>
+                            <textarea id="courseDesc" rows="6" placeholder="Tóm tắt nội dung khóa học..." required></textarea>
+                            <div style="text-align: right; font-size: 12px; color: #94a3b8;">
+                                <span id="charCount">0</span>/500 ký tự
                             </div>
                         </div>
 
-                        <div class="input-group">
-                            <label for="courseId">Mã khóa học <span style="color: #ff4d4f;">*</span></label>
-                            <div class="input-wrapper">
-                                <input type="text" id="courseId" placeholder="Ví dụ: TOAN12_ONTHI" required>
+                        <div class="form-row-half">
+                            <div class="input-group-vertical">
+                                <label>Môn học *</label>
+                                <select id="courseCategory" required>
+                                    <option value="" disabled selected>Chọn môn học</option>
+                                    <option value="Toán học">Toán học</option>
+                                    <option value="Vật lý">Vật lý</option>
+                                    <option value="Hóa học">Hóa học</option>
+                                    <option value="Tiếng Anh">Tiếng Anh</option>
+                                    <option value="Ngữ văn">Ngữ văn</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
                             </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="courseTags">Tag môn học (Phân cách bằng dấu phẩy)</label>
-                            <div class="input-wrapper">
-                                <input type="text" id="courseTags" placeholder="Ví dụ: Toán học, Hình học, Đại số">
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="courseSummary">Nội dung tóm tắt ngắn gọn <span style="color: #ff4d4f;">*</span></label>
-                            <div class="input-wrapper">
-                                <textarea id="courseSummary" rows="5" maxlength="200" placeholder="Mô tả ngắn gọn về mục tiêu và nội dung khóa học (Tối đa 200 ký tự)..." style="width: 100%; border: 1.5px solid #E2E8F0; border-radius: 12px; background: #F8FAFC; padding: 12px 15px; font-size: 15px; outline: none; resize: none;" required></textarea>
-                                <div class="char-count" style="text-align: right; font-size: 12px; color: var(--text-gray); margin-top: 5px;">0/200 ký tự</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="input-group select-wrapper" style="background-image: none;">
-                            <label for="courseGrade">Khối lớp <span style="color: #ff4d4f;">*</span></label>
-                            <div class="input-wrapper">
+                            <div class="input-group-vertical">
+                                <label>Khối lớp *</label>
                                 <select id="courseGrade" required>
-                                    <option value="" disabled selected>Chọn khối lớp</option>
                                     <option value="10">Lớp 10</option>
                                     <option value="11">Lớp 11</option>
                                     <option value="12">Lớp 12</option>
+                                    <option value="Chung">Chung</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div class="input-group" style="margin-top: 25px;">
-                            <label>Ảnh bìa khóa học</label>
-                            <div class="image-upload-area" id="dropZone">
-                                <i class="far fa-image"></i>
-                                <p>Ảnh bìa khuyến nghị 2100px chiều dài và 900px chiều cao. Kéo thả hoặc <span>Thêm ngay</span></p>
-                                <input type="file" id="courseImage" accept="image/*" hidden>
-                            </div>
+                        <div class="input-group-vertical" style="width: 50%; padding-right: 10px;">
+                            <label>Mã định danh (Code)</label>
+                            <input type="text" id="courseCode" placeholder="MATH12-01">
                         </div>
                     </div>
-                </div>
 
-                <div class="form-actions">
-                    <button type="button" class="btn-outline" style="border-color: #E2E8F0; color: var(--text-dark);">Hủy bỏ</button>
-                    <button type="submit" class="btn-primary">Tạo khóa học</button>
+                    <div class="form-sidebar">
+                        <div class="input-group-vertical">
+                            <label>Hình ảnh khóa học</label>
+                            <div class="image-upload-box" onclick="document.getElementById('courseImage').click()">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 30px; color: #94a3b8;"></i>
+                                <p style="font-size: 13px; margin-top: 10px; color: #64748b;">Click để tải ảnh lên (JPG, PNG)</p>
+                                <input type="file" id="courseImage" hidden accept="image/*">
+                                <img id="imgPreview" src="" alt="Preview">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 40px;">
+                            <button type="submit" class="btn-primary" id="submitBtn" style="width: 100%; padding: 15px; font-size: 16px;">
+                                Hoàn tất & Xuất bản
+                            </button>
+                            <button type="button" class="btn-outline" onclick="history.back()" style="width: 100%; margin-top: 10px; border: none;">
+                                Hủy bỏ
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
     </main>
 
-    <footer>
-        <div class="container" style="text-align: center; padding: 30px 0; color: var(--text-gray); font-size: 14px; border-top: 1px solid #E2E8F0;">
-            <p>&copy; 2026 <strong>DCGTeach</strong>. Hệ thống quản lý học tập trực tuyến.</p>
-        </div>
-    </footer>
-
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // --- 1. KIỂM TRA QUYỀN TRUY CẬP (AUTH GUARD) ---
-    const userStr = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('token');
+            if (!user || !token) { window.location.href = 'index.html'; return; }
 
-    if (!userStr || !token) {
-        window.location.href = 'index.html';
-        return;
-    }
+            // Hiển thị tên
+            document.getElementById('navUserName').textContent = user.name || "Giảng viên";
 
-    const user = JSON.parse(userStr);
-    if (user.role !== 'Giảng viên') {
-        alert("Bạn không có quyền truy cập trang này!");
-        window.location.href = 'index.html';
-        return;
-    }
+            // Lấy ID từ URL nếu đang ở chế độ EDIT
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit');
+            let currentImageBase64 = "";
 
-    // --- 2. XỬ LÝ GIAO DIỆN (UI LOGIC) ---
-    const courseForm = document.getElementById('createCourseForm');
-    const summaryInput = document.getElementById('courseSummary');
-    const charCount = document.querySelector('.char-count');
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('courseImage');
+            // --- PHẦN 1: LOGIC FETCH DỮ LIỆU CŨ KHI EDIT ---
+            if (editId) {
+                document.getElementById('pageTitle').innerText = "Chỉnh sửa khóa học - DCGLearn";
+                document.getElementById('mainHeading').innerText = "Chỉnh sửa khóa học";
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.innerText = "Lưu thay đổi";
 
-    // Đếm số ký tự tóm tắt
-    summaryInput.addEventListener('input', () => {
-        const length = summaryInput.value.length;
-        charCount.textContent = `${length}/200 ký tự`;
-        charCount.style.color = length >= 200 ? '#ff4d4f' : 'var(--text-gray)';
-    });
-
-    // Xử lý chọn ảnh bìa
-    dropZone.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            const fileName = this.files[0].name;
-            dropZone.querySelector('p').innerHTML = `Đã chọn: <strong style="color:var(--primary-blue)">${fileName}</strong>`;
-            dropZone.style.borderColor = 'var(--primary-blue)';
-            dropZone.style.background = 'var(--light-bg)';
-        }
-    });
-
-    // Xử lý đăng xuất
-    const logoutBtn = document.querySelector('.btn-login');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
+                fetch(`/api/courses/${editId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('courseName').value = data.title || "";
+                        document.getElementById('courseCode').value = data.code || "";
+                        
+                        // KHÔI PHỤC LOGIC: Đổ dữ liệu môn học cũ vào
+                        document.getElementById('courseCategory').value = data.category || "";
+                        
+                        document.getElementById('courseGrade').value = data.grade || "12";
+                        document.getElementById('courseDesc').value = data.description || "";
+                        document.getElementById('charCount').innerText = (data.description || "").length;
+                        
+                        if (data.image) {
+                            const preview = document.getElementById('imgPreview');
+                            preview.src = data.image;
+                            preview.style.display = 'block';
+                            currentImageBase64 = data.image; // Giữ lại ảnh cũ nếu không thay đổi
+                        }
+                    })
+                    .catch(err => console.error("Lỗi lấy thông tin khóa học:", err));
             }
-        });
-    }
 
-    // --- 3. XỬ LÝ GỬI DỮ LIỆU API (API LOGIC) ---
-    courseForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const btnSubmit = courseForm.querySelector('button[type="submit"]');
-        const originalBtnText = btnSubmit.innerHTML;
-
-        // Thu thập dữ liệu dưới dạng JSON (Khớp với cấu trúc courses.json)
-        const courseData = {
-            title: document.getElementById('courseName').value,
-            code: document.getElementById('courseId').value,
-            tags: document.getElementById('courseTags').value.split(',').map(tag => tag.trim()),
-            description: summaryInput.value,
-            grade: document.getElementById('courseGrade').value,
-            instructor: user.name, // Lấy tên từ thông tin đăng nhập
-            image: "https://via.placeholder.com/300x150" // Placeholder cho ảnh bìa
-        };
-
-        try {
-            // Trạng thái Loading
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang khởi tạo...';
-
-            // GỌI API
-            const response = await fetch('/api/courses', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify(courseData)
+            // --- PHẦN 2: XỬ LÝ ẢNH (GIỮ NGUYÊN) ---
+            document.getElementById('courseImage').addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        currentImageBase64 = e.target.result;
+                        const preview = document.getElementById('imgPreview');
+                        preview.src = currentImageBase64;
+                        preview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
             });
 
-            const result = await response.json();
+            // Đếm ký tự
+            document.getElementById('courseDesc').addEventListener('input', function() {
+                document.getElementById('charCount').innerText = this.value.length;
+            });
 
-            if (response.ok) {
-                alert('Tạo khóa học thành công!');
-                window.location.href = '/dashboard-teacher'; 
-            } else {
-                alert('Lỗi: ' + (result.message || 'Có lỗi xảy ra khi tạo khóa học.'));
-            }
+            // --- PHẦN 3: SUBMIT (GỬI KÈM MÔN HỌC) ---
+            document.getElementById('courseForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('submitBtn');
+                
+                const courseData = {
+                    title: document.getElementById('courseName').value,
+                    code: document.getElementById('courseCode').value,
+                    
+                    // KHÔI PHỤC LOGIC: Gửi dữ liệu môn học lên server
+                    category: document.getElementById('courseCategory').value,
+                    
+                    grade: document.getElementById('courseGrade').value,
+                    description: document.getElementById('courseDesc').value,
+                    image: currentImageBase64,
+                    instructor: user.name // Đảm bảo instructor khớp
+                };
 
-        } catch (error) {
-            console.error('API Error:', error);
-            alert('Không thể kết nối đến máy chủ! Vui lòng kiểm tra Node server.');
-        } finally {
-            // Hoàn tác trạng thái nút
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = originalBtnText;
-        }
-    });
-});
-</script>
+                try {
+                    btn.disabled = true;
+                    btn.innerText = "Đang xử lý...";
+
+                    const method = editId ? 'PUT' : 'POST';
+                    const endpoint = editId ? `/api/courses/${editId}` : '/api/courses';
+
+                    const response = await fetch(endpoint, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(courseData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alert(editId ? "Cập nhật thành công!" : "Tạo khóa học thành công!");
+                        window.location.href = 'manage-courses.html';
+                    } else {
+                        alert("Lỗi: " + (result.message || "Không thể thực hiện."));
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("Lỗi kết nối Server.");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = editId ? "Lưu thay đổi" : "Hoàn tất & Xuất bản";
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý khóa học - DCGLearn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .manage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0 30px 0;
+        }
+        .course-manage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container navbar">
+            <div class="logo" onclick="window.location.href='dashboard-teacher.html'" style="cursor:pointer">
+                <i class="fas fa-graduation-cap"></i>
+                <span>DCG<span>Learn</span></span>
+            </div>
+            <nav style="display: flex; align-items: center; gap: 25px;">
+                <a href="#" class="active">Quản lý khóa học</a>
+                <a href="dashboard-teacher.html">Bảng tin</a>
+                
+                <div class="user-profile">
+                    <div class="user-dropdown">
+                        <button class="user-dropbtn" id="userMenuBtn">
+                            <i class="far fa-user-circle"></i>
+                            <span id="navUserName">Giảng viên</span>
+                            <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
+                        </button>
+                        <div class="dropdown-content" id="userDropdown">
+                            <a href="#"><i class="fas fa-user-edit"></i> Hồ sơ cá nhân</a>
+                            <a href="create-course.html"><i class="fas fa-plus-circle"></i> Tạo khóa học mới</a>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 5px 0;">
+                            <a href="#" id="logoutBtn" style="color: #ff4d4f;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="manage-header">
+            <div>
+                <h2 style="font-weight: 800; font-size: 28px;">Lớp học của tôi</h2>
+                <p style="color: var(--text-gray);">Quản lý và chỉnh sửa các nội dung bài giảng đã xuất bản</p>
+            </div>
+            <button class="btn-primary" onclick="window.location.href='create-course.html'">
+                <i class="fas fa-plus"></i> Tạo khóa học mới
+            </button>
+        </div>
+
+        <div class="course-manage-grid" id="courseManageGrid">
+            </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('token');
+
+            if (!user || !token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 1. HIỂN THỊ TÊN NGƯỜI DÙNG LÊN NAVBAR (GIỮ LOGIC CŨ)
+            const navUserName = document.getElementById('navUserName');
+            if (navUserName) {
+                navUserName.textContent = "Thầy/Cô " + (user.name || user.username);
+            }
+
+            // 2. PHẦN SỬA ĐỔI: FETCH API LẤY KHÓA HỌC CỦA TÔI
+            async function loadCourses() {
+                const grid = document.getElementById('courseManageGrid');
+                try {
+                    // Gọi API my-courses (Đã có verifyToken để lọc đúng người tạo)
+                    const response = await fetch('/api/courses/my-courses', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    const courses = await response.json();
+
+                    if (courses && courses.length > 0) {
+                        grid.innerHTML = courses.map(course => `
+                            <div class="course-card">
+                                <div class="card-img" style="background-image: url('${course.image || 'https://via.placeholder.com/300x150'}')"></div>
+                                <div class="card-body">
+                                    <span class="tag">Mã: ${course.code}</span>
+                                    <h3 style="margin: 10px 0;">${course.title}</h3>
+                                    <p style="color: #64748b; font-size: 14px; height: 40px; overflow: hidden;">${course.description}</p>
+                                    <div class="admin-controls">
+                                        <button class="btn-outline" onclick="editCourse(${course.id})">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </button>
+                                        <button class="btn-outline" style="color: #ef4444; border-color: #fee2e2;" onclick="deleteCourse(${course.id})">
+                                            <i class="fas fa-trash"></i> Xóa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 50px;">Bạn chưa tạo khóa học nào.</p>';
+                    }
+                } catch (error) {
+                    console.error("Lỗi:", error);
+                    grid.innerHTML = '<p style="color: red; text-align: center; grid-column: 1/-1;">Không thể kết nối đến máy chủ.</p>';
+                }
+            }
+
+            // HÀM XÓA KHÓA HỌC (GỌI API DELETE)
+            window.deleteCourse = async (id) => {
+                if (confirm("Bạn có chắc chắn muốn xóa khóa học này khỏi hệ thống?")) {
+                    try {
+                        const response = await fetch(`/api/courses/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        
+                        if (response.ok) {
+                            alert("Xóa thành công!");
+                            loadCourses(); 
+                        } else {
+                            const err = await response.json();
+                            alert("Lỗi: " + err.message);
+                        }
+                    } catch (error) {
+                        alert("Lỗi kết nối khi xóa.");
+                    }
+                }
+            }
+
+            window.editCourse = (id) => {
+                window.location.href = `create-course.html?edit=${id}`;
+            };
+
+            loadCourses();
+
+            // 3. GIỮ NGUYÊN LOGIC DROPDOWN & ĐĂNG XUẤT CỦA BẠN
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            const userDropdown = document.getElementById('userDropdown');
+
+            if (userMenuBtn) {
+                userMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('show');
+                });
+            }
+
+            window.addEventListener('click', () => {
+                if (userDropdown && userDropdown.classList.contains('show')) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+            
+            document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm("Xác nhận đăng xuất?")) {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

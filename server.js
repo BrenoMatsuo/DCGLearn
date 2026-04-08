@@ -4,6 +4,8 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Middlewares
 app.use(cors());
@@ -38,6 +40,15 @@ app.get('/create-course', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend', 'create-course.html'));
 });
 
+app.post('/api/courses', async (req, res) => {
+    try {
+        // ... code đọc và lưu file JSON của bạn ...
+        
+    } catch (error) {
+        console.error("CHI TIẾT LỖI TẠO KHÓA HỌC: ", error); // <-- THÊM DÒNG NÀY
+        res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+    }
+});
 // Trang chủ
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend', 'index.html'));

@@ -58,8 +58,13 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng!' });
         }
 
+        // CẬP NHẬT: Thêm trường 'name' vào Payload của JWT để đồng bộ hóa dữ liệu định danh
         const token = jwt.sign(
-            { userId: user.id, role: user.role },
+            { 
+                userId: user.id, 
+                name: user.name, 
+                role: user.role 
+            },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );

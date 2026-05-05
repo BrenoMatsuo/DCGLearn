@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { readData, writeData } = require('../data/db'); // Gọi công cụ đọc/ghi
+const db = require('../data/database'); // Kết nối Postgres mới
 
 exports.register = async (req, res) => {
     try {
@@ -10,28 +10,29 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: 'Vui lòng điền đầy đủ tất cả các trường!' });
         }
 
-        // 1. Đọc dữ liệu từ file JSON
-        const db = readData();
-
-        // 2. Kiểm tra email trùng
-        const existingUser = db.users.find(u => u.email === email);
-        if (existingUser) {
+        // 1. Kiểm tra email trùng trong Postgres
+        const existingUser = await db.query('SELECT * FROM "User" WHERE email = $1', [email]);
+        if (existingUser.rows.length > 0) {
             return res.status(400).json({ message: 'Email này đã được đăng ký!' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = {
-            id: Date.now(),
-            name,
-            email,
-            role: role.trim(),
-            password: hashedPassword
-        };
+        // 2. Lấy role_id từ tên role (VD: 'Teacher' -> 2)
+        // Chuyển đổi tên role từ frontend (ví dụ: 'Học viên' -> 'Student') nếu cần
+        let roleName = role.trim();
+        if (roleName === 'Học viên') roleName = 'Student';
+        if (roleName === 'Giảng viên') roleName = 'Teacher';
 
-        // 3. Thêm user mới vào mảng và Ghi lại vào file JSON
-        db.users.push(newUser);
-        writeData(db);
+        const roleResult = await db.query('SELECT role_id FROM "Role" WHERE name = $1', [roleName]);
+        if (roleResult.rows.length === 0) {
+            return res.status(400).json({ message: 'Quyền người dùng không hợp lệ!' });
+        }
+        const roleId = roleResult.rows[0].role_id;
+
+        // 3. Thêm user mới vào Postgres
+        const sql = 'INSERT INTO "User" (name, email, password_hash, role_id, created_at) VALUES ($1, $2, $3, $4, CURRENT_DATE) RETURNING *';
+        await db.query(sql, [name, email, hashedPassword, roleId]);
 
         res.status(201).json({ message: 'Đăng ký tài khoản thành công!' });
     } catch (error) {
@@ -44,26 +45,37 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // 1. Đọc dữ liệu từ file JSON
-        const db = readData();
+        const sql = `
+            SELECT u.*, r.name as role_name 
+            FROM "User" u 
+            JOIN "Role" r ON u.role_id = r.role_id 
+            WHERE u.email = $1
+        `;
+        const result = await db.query(sql, [email]);
+        const user = result.rows[0];
 
-        // 2. Tìm user
-        const user = db.users.find(u => u.email === email);
         if (!user) {
             return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng!' });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        // Kiểm tra mật khẩu (Hỗ trợ hash và text thuần)
+        let isMatch = false;
+        if (user.password_hash.startsWith('$2')) {
+            isMatch = await bcrypt.compare(password, user.password_hash);
+        } else {
+            isMatch = (password === user.password_hash);
+        }
+
         if (!isMatch) {
             return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng!' });
         }
 
-        // CẬP NHẬT: Thêm trường 'name' vào Payload của JWT để đồng bộ hóa dữ liệu định danh
+        // CỰC KỲ QUAN TRỌNG: role ở đây phải là 'Teacher', 'Student' hoặc 'Admin'
         const token = jwt.sign(
             { 
-                userId: user.id, 
-                name: user.name, 
-                role: user.role 
+                userId: user.user_id, 
+                role: user.role_name.trim(), // Loại bỏ khoảng trắng thừa nếu có
+                name: user.name 
             },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
@@ -72,12 +84,7 @@ exports.login = async (req, res) => {
         res.json({
             message: 'Đăng nhập thành công!',
             token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            user: { id: user.user_id, name: user.name, role: user.role_name.trim() }
         });
     } catch (error) {
         console.error("Lỗi đăng nhập:", error);

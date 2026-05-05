@@ -9,4 +9,9 @@ router.get('/profile', verifyToken, userController.getProfile);
 // Route lấy toàn bộ danh sách người dùng (Chỉ Admin mới xem được)
 router.get('/all', verifyToken, checkRole(['Admin']), userController.getAllUsers);
 
+// --- CÁC ROUTE QUẢN TRỊ (CHỈ ADMIN) ---
+router.put('/role/:userId', verifyToken, checkRole(['Admin']), userController.updateUserRole);
+router.put('/reset-password/:userId', verifyToken, checkRole(['Admin']), userController.resetPassword);
+router.delete('/:userId', verifyToken, checkRole(['Admin']), userController.deleteUser);
+
 module.exports = router;

@@ -172,51 +172,15 @@
                     <h2 class="section-title" style="margin-bottom: 0;">Khóa học đang học</h2>
                 </div>
 
-                <div class="course-grid" id="courseContainer">
-    <div class="course-card">
-        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=500&auto=format&fit=crop');"></div>
-        <div class="card-body">
-            <span class="tag" style="background: #e3f2fd; color: #1e88e5;">Toán học</span>
-            <h3>Toán học</h3>
-            <p><i class="fas fa-book"></i> Giải tích & Hình học không gian</p>
-            <div class="card-footer">
-                <button class="btn-outline">Tiếp tục học</button>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="course-card">
-        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1543165796-5426273eaab3?q=80&w=500&auto=format&fit=crop');"></div>
-        <div class="card-body">
-            <span class="tag" style="background: #f0f4f8; color: #334e68;">Ngoại ngữ</span>
-            <h3>Tiếng Anh</h3>
-            <p><i class="fas fa-globe"></i> Global Success - Kết nối tri thức</p>
-            <div class="card-footer">
-                <button class="btn-outline">Tiếp tục học</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="course-card">
-        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=500&auto=format&fit=crop');"></div>
-        <div class="card-body">
-            <span class="tag" style="background: #fff9db; color: #f08c00;">Khoa học</span>
-            <h3>Vật lí</h3>
-            <p><i class="fas fa-atom"></i> Dao động & Sóng điện từ</p>
-            <div class="card-footer">
-                <button class="btn-outline">Tiếp tục học</button>
-            </div>
-        </div>
-    </div>
-
-
-
+            <div class="course-grid" id="courseContainer">
+                    <p style="text-align: center; grid-column: 1/-1;">Đang tải danh sách khóa học...</p>
+                </div>
             </div>
         </section>
     </main>
 
- <script>
+     <script src="script.js">
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. KIỂM TRA QUYỀN TRUY CẬP (AUTH GUARD)
     const userStr = localStorage.getItem('user');

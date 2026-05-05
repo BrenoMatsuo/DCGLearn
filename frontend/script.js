@@ -54,7 +54,7 @@ async function displayCourses() {
                         </span>
                         <h3 style="margin: 10px 0;">${course.title}</h3>
                         <p style="color:#607d8b; font-size:14px; margin-bottom:15px;">${course.description}</p>
-                        <button class="btn-primary" onclick="enrollCourse(${course.id})" style="width:100%; padding:10px; border:none; background:#1e88e5; color:white; border-radius:8px; cursor:pointer;">
+                        <button class="btn-primary" onclick="enrollCourse(${course.course_id})" style="width:100%; padding:10px; border:none; background:#1e88e5; color:white; border-radius:8px; cursor:pointer;">
                             Đăng ký học <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>

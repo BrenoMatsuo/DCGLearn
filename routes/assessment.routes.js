@@ -12,6 +12,12 @@ router.get('/:id', verifyToken, assessmentController.getAssessmentDetails);
 // Tạo bài tập mới (Chỉ Giảng viên/Admin)
 router.post('/', verifyToken, checkRole(['Teacher', 'Admin']), assessmentController.createAssessment);
 
+// Cập nhật bài tập (Chỉ Giảng viên/Admin)
+router.put('/:id', verifyToken, checkRole(['Teacher', 'Admin']), assessmentController.updateAssessment);
+
+// Xóa bài tập (Chỉ Giảng viên/Admin)
+router.delete('/:id', verifyToken, checkRole(['Teacher', 'Admin']), assessmentController.deleteAssessment);
+
 // Xem thống kê (Chỉ Giảng viên/Admin)
 router.get('/:id/stats', verifyToken, checkRole(['Teacher', 'Admin']), assessmentController.getStatsByAssessment);
 

@@ -90,29 +90,73 @@ exports.createAssessment = async (req, res) => {
 };
 
 // 4. Xem thống kê (Dành cho Giảng viên)
-exports.getStatsByAssessment = async (req, res) => {
+...
+    }
+};
+
+// 5. Cập nhật thông tin bài thi (Chỉ sửa thông tin chung)
+exports.updateAssessment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, timeLimit } = req.body;
+
+        const sql = `
+            UPDATE "Assessment" 
+            SET title = $1, description = $2, time_limit = $3 
+            WHERE assessment_id = $4 RETURNING *
+        `;
+        const result = await db.query(sql, [title, description, timeLimit, id]);
+
+        if (result.rows.length === 0) return res.status(404).json({ message: "Không tìm thấy bài thi." });
+
+        res.json({ message: "Cập nhật bài thi thành công!", assessment: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Lỗi khi cập nhật bài thi." });
+    }
+};
+
+// 6. Xóa bài thi (Xóa sạch toàn bộ dữ liệu liên quan)
+exports.deleteAssessment = async (req, res) => {
+    const client = await db.getClient();
     try {
         const { id } = req.params;
 
-        const sql = `
-            SELECT s.*, u.name as student_name
-            FROM "Submission" s
-            JOIN "User" u ON s.student_id = u.user_id
-            WHERE s.assessment_id = $1
-            ORDER BY s.submitted_at DESC
-        `;
-        const result = await db.query(sql, [id]);
+        await client.query('BEGIN');
 
-        res.json({
-            submissions: result.rows.map(s => ({
-                name: s.student_name,
-                time: s.submitted_at,
-                score: s.score,
-                status: "Hoàn thành"
-            }))
-        });
+        // A. Xóa chi tiết câu trả lời của học sinh trước
+        await client.query(`
+            DELETE FROM "SubmissionAnswer" 
+            WHERE submission_id IN (SELECT submission_id FROM "Submission" WHERE assessment_id = $1)
+        `, [id]);
+
+        // B. Xóa các bài nộp
+        await client.query('DELETE FROM "Submission" WHERE assessment_id = $1', [id]);
+
+        // C. Xóa các Options (Đáp án)
+        await client.query(`
+            DELETE FROM "Option" 
+            WHERE question_id IN (SELECT question_id FROM "Question" WHERE assignment_id = $1)
+        `, [id]);
+
+        // D. Xóa các Questions (Câu hỏi)
+        await client.query('DELETE FROM "Question" WHERE assignment_id = $1', [id]);
+
+        // E. Cuối cùng xóa bài thi
+        const result = await client.query('DELETE FROM "Assessment" WHERE assessment_id = $1', [id]);
+
+        if (result.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: "Không tìm thấy bài thi để xóa." });
+        }
+
+        await client.query('COMMIT');
+        res.json({ message: "Đã xóa bài thi và toàn bộ dữ liệu liên quan thành công!" });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Lỗi khi lấy thống kê." });
+        await client.query('ROLLBACK');
+        console.error("Lỗi xóa bài thi:", error);
+        res.status(500).json({ message: "Lỗi hệ thống khi xóa bài thi." });
+    } finally {
+        client.release();
     }
 };

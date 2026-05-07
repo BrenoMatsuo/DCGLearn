@@ -6,13 +6,11 @@
     <title>Bảng điều khiển Giảng viên - DCGLearn</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* CSS bổ sung riêng cho Dashboard (Dựa trên nền tảng style.css) */
         .dashboard-main { padding: 40px 0; background-color: #FBFCFE; min-height: 100vh; }
-        
+
         .welcome-banner {
             background: var(--white);
             padding: 30px;
@@ -26,7 +24,7 @@
         }
 
         .role-badge {
-            background: #FFF9DB; /* Màu vàng nhạt cho Giảng viên */
+            background: #FFF9DB;
             color: #F08C00;
             padding: 6px 15px;
             border-radius: 20px;
@@ -63,16 +61,16 @@
             align-items: center;
             justify-content: center;
             font-size: 22px;
+            flex-shrink: 0;
         }
 
-        /* Khu vực thao tác nhanh dành cho Giảng viên */
         .teacher-actions {
             margin-bottom: 40px;
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
         }
-        
+
         .btn-action {
             display: inline-flex;
             align-items: center;
@@ -85,11 +83,45 @@
             font-weight: 700;
             text-decoration: none;
             transition: 0.3s;
+            cursor: pointer;
         }
         .btn-action:hover { background: #1565C0; transform: translateY(-3px); }
         .btn-action.secondary { background: #E2E8F0; color: var(--text-dark); }
-        .btn-action.secondary:hover { background: #CBD5E1; }
+        .btn-action.secondary:hover { background: #CBD5E1; transform: translateY(-3px); }
 
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .skeleton-card {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid #F0F0F0;
+            overflow: hidden;
+        }
+        .skeleton-img { height: 180px; }
+        .skeleton-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .skeleton-line { height: 14px; }
+        .skeleton-line.short { width: 40%; }
+        .skeleton-line.medium { width: 70%; }
+        .skeleton-line.long { width: 90%; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-gray);
+            grid-column: 1 / -1;
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.3; }
+        .empty-state p { font-size: 16px; }
     </style>
 </head>
 <body>
@@ -103,12 +135,11 @@
             <nav style="display: flex; align-items: center; gap: 25px;">
                 <a href="manage-courses.html" class="active">Quản lý khóa học</a>
                 <a href="#">Bảng tin</a>
-                
                 <div class="user-profile">
                     <div class="user-dropdown">
                         <button class="user-dropbtn" id="userMenuBtn">
                             <i class="far fa-user-circle"></i>
-                            <span id="navUserName">Thầy Trần Đức Cường</span>
+                            <span id="navUserName">Giảng viên</span>
                             <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
                         </button>
                         <div class="dropdown-content" id="userDropdown">
@@ -126,42 +157,47 @@
 
     <main class="dashboard-main">
         <div class="container">
-            
+
+            <!-- Welcome Banner -->
             <div class="welcome-banner">
                 <div>
-                    <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Chào mừng trở lại, <span id="welcomeName" style="color: var(--primary-blue);">Thầy Cường</span>!</h1>
+                    <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">
+                        Chào mừng trở lại, <span id="welcomeName" style="color: var(--primary-blue);">Thầy/Cô</span>!
+                    </h1>
                     <p style="color: var(--text-gray);">Chúc thầy/cô một ngày làm việc hiệu quả và tràn đầy năng lượng.</p>
                 </div>
                 <div class="role-badge">Giảng viên</div>
             </div>
 
+            <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
                     <div>
                         <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 5px;">Khóa học đang dạy</p>
-                        <h3 style="font-size: 26px; font-weight: 800;">3</h3>
+                        <h3 id="statCourseCount" style="font-size: 26px; font-weight: 800;">—</h3>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-users"></i></div>
                     <div>
                         <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 5px;">Tổng số học sinh</p>
-                        <h3 style="font-size: 26px; font-weight: 800;">150</h3>
+                        <h3 id="statStudentCount" style="font-size: 26px; font-weight: 800;">—</h3>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon" style="color: #ff4d4f;"><i class="fas fa-clipboard-check"></i></div>
                     <div>
                         <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 5px;">Bài tập cần chấm</p>
-                        <h3 style="font-size: 26px; font-weight: 800;">12</h3>
+                        <h3 id="statPendingCount" style="font-size: 26px; font-weight: 800;">—</h3>
                     </div>
                 </div>
             </div>
 
+            <!-- Quick Actions -->
             <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">Thao tác nhanh</h2>
             <div class="teacher-actions">
-                <a href="/create-course" class="btn-action">
+                <a href="create-course.html" class="btn-action">
                     <i class="fas fa-plus"></i> Tạo khóa học mới
                 </a>
                 <a href="#" class="btn-action secondary">
@@ -172,35 +208,28 @@
                 </a>
             </div>
 
+            <!-- Course List Header -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <h2 style="font-size: 24px; font-weight: 800;">Khóa học bạn đang phụ trách</h2>
-                <button class="btn-outline">Xem tất cả</button>
+                <button class="btn-outline" id="viewAllBtn">Xem tất cả</button>
             </div>
 
-            <div class="course-grid">
-                <div class="course-card">
-                    <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=500&auto=format&fit=crop');"></div>
-                    <div class="card-body">
-                        <span class="tag">Công nghệ</span>
-                        <h3>Lập trình Web Cơ bản</h3>
-                        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 15px;">Dành cho sinh viên năm 2 khoa CNTT.</p>
-                        <div class="card-footer">
-                            <span style="font-weight: 700; color: var(--text-dark);"><i class="fas fa-users"></i> 65 SV</span>
-                            <button class="btn-outline"><i class="fas fa-edit"></i> Quản lý</button>
-                        </div>
+            <!-- Course Container (dynamic) -->
+            <div class="course-grid" id="courseContainer">
+                <div class="skeleton-card">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="skeleton-body">
+                        <div class="skeleton skeleton-line short"></div>
+                        <div class="skeleton skeleton-line medium"></div>
+                        <div class="skeleton skeleton-line long"></div>
                     </div>
                 </div>
-
-                <div class="course-card">
-                    <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=500&auto=format&fit=crop');"></div>
-                    <div class="card-body">
-                        <span class="tag">Khoa học</span>
-                        <h3>Vật lí</h3>
-                        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 15px;">Học kỳ 1 - Khối A, A1.</p>
-                        <div class="card-footer">
-                            <span style="font-weight: 700; color: var(--text-dark);"><i class="fas fa-users"></i> 85 SV</span>
-                            <button class="btn-outline"><i class="fas fa-edit"></i> Quản lý</button>
-                        </div>
+                <div class="skeleton-card">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="skeleton-body">
+                        <div class="skeleton skeleton-line short"></div>
+                        <div class="skeleton skeleton-line medium"></div>
+                        <div class="skeleton skeleton-line long"></div>
                     </div>
                 </div>
             </div>
@@ -208,81 +237,124 @@
         </div>
     </main>
 
-
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. KIỂM TRA QUYỀN TRUY CẬP (AUTH GUARD)
+document.addEventListener('DOMContentLoaded', async () => {
+
+    // ===== 1. AUTH GUARD =====
     const userStr = localStorage.getItem('user');
     const token = localStorage.getItem('token');
 
-    // Bước A: Kiểm tra xem có Token chưa
     if (!userStr || !token) {
         window.location.href = 'index.html';
-        return; 
+        return;
     }
 
     let user;
     try {
         user = JSON.parse(userStr);
-        
-        // Bước B: Kiểm tra vai trò (Role)
-        // Dùng .trim() để tránh lỗi do khoảng trắng thừa
-        const userRole = user.role ? user.role.trim() : "";
-
-        if (userRole !== 'Giảng viên') {
-            alert("Khu vực này chỉ dành cho Giảng viên. Bạn không có quyền truy cập.");
-            window.location.href = '/'; 
-            return;
-        }
     } catch (e) {
-        console.error("Lỗi dữ liệu:", e);
         localStorage.clear();
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Kiểm tra vai trò linh hoạt (hỗ trợ cả tiếng Việt lẫn tiếng Anh)
+    const userRole = user.role ? user.role.toLowerCase().trim() : "";
+    if (userRole !== 'giảng viên' && userRole !== 'teacher') {
+        alert("Khu vực này chỉ dành cho Giảng viên. Bạn không có quyền truy cập.");
         window.location.href = '/';
         return;
     }
 
-    // 2. LẤY PHẦN TỬ GIAO DIỆN
-    const userMenuBtn = document.getElementById('userMenuBtn');
-    const userDropdown = document.getElementById('userDropdown');
-    const navUserName = document.getElementById('navUserName');
-    const welcomeName = document.getElementById('welcomeName');
-
-    // 3. HIỂN THỊ THÔNG TIN THẬT
+    // ===== 2. HIỂN THỊ THÔNG TIN GIẢNG VIÊN =====
     const displayName = user.name || "Giảng viên";
-    if (navUserName) navUserName.textContent = "Thầy/Cô " + displayName;
-    if (welcomeName) welcomeName.textContent = displayName;
+    document.getElementById('navUserName').textContent = "Thầy/Cô " + displayName;
+    document.getElementById('welcomeName').textContent = displayName;
 
-    // 4. XỬ LÝ DROPDOWN MENU
-    if (userMenuBtn && userDropdown) {
-        userMenuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            userDropdown.classList.toggle('show');
-        });
+    // ===== 3. LOAD KHÓA HỌC TỪ API =====
+    const courseContainer = document.getElementById('courseContainer');
+
+    try {
+        const response = await fetch('/api/courses/all');
+        const data = await response.json();
+        const allCourses = data.courses || [];
+
+        // Lọc đúng khóa học của giảng viên hiện tại
+        const courses = allCourses.filter(c => c.instructor_id === user.id);
+
+        document.getElementById('statCourseCount').textContent = courses.length;
+
+        document.getElementById('statStudentCount').textContent =
+            data.totalStudents !== undefined ? data.totalStudents : '—';
+        document.getElementById('statPendingCount').textContent =
+            data.pendingAssignments !== undefined ? data.pendingAssignments : '—';
+
+        if (courses.length === 0) {
+            courseContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-chalkboard"></i>
+                    <p>Bạn chưa tạo khóa học nào. Hãy bắt đầu ngay!</p>
+                </div>`;
+            return;
+        }
+
+        courseContainer.innerHTML = courses.map(course => `
+            <div class="course-card">
+                <div class="card-img" style="background-image: url('${course.image || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=500&auto=format&fit=crop'}');"></div>
+                <div class="card-body">
+                    <span class="tag">${course.category || 'Chung'}</span>
+                    <h3>${course.title}</h3>
+                    <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 15px;">${course.description || ''}</p>
+                    <div class="card-footer">
+                        <span style="font-weight: 700; color: var(--text-dark);">
+                            <i class="fas fa-users"></i> ${course.studentCount ?? course.student_count ?? '—'} SV
+                        </span>
+                        <button class="btn-outline" onclick="window.location.href='create-course.html?edit=${course.course_id}'">
+                            <i class="fas fa-edit"></i> Quản lý
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error("Lỗi khi tải khóa học:", error);
+        courseContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Không thể tải danh sách khóa học. Vui lòng thử lại sau.</p>
+            </div>`;
     }
 
-    // Đóng menu khi click ra ngoài
+    // ===== 4. DROPDOWN MENU =====
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+
+    userMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userDropdown.classList.toggle('show');
+    });
     window.addEventListener('click', (e) => {
-        if (userDropdown && userDropdown.classList.contains('show')) {
-            if (!userMenuBtn.contains(e.target)) {
-                userDropdown.classList.remove('show');
-            }
+        if (!userMenuBtn.contains(e.target)) {
+            userDropdown.classList.remove('show');
         }
     });
 
-    // 5. XỬ LÝ ĐĂNG XUẤT
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (confirm("Xác nhận đăng xuất khỏi hệ thống giảng dạy?")) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'index.html';
-            }
-        });
-    }
-});
+    // ===== 5. ĐĂNG XUẤT =====
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (confirm("Xác nhận đăng xuất khỏi hệ thống giảng dạy?")) {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    });
 
-</script>
+    // ===== 6. NÚT XEM TẤT CẢ =====
+    document.getElementById('viewAllBtn').addEventListener('click', () => {
+        window.location.href = 'manage-courses.html';
+    });
+
+});
+    </script>
 </body>
 </html>

@@ -7,8 +7,8 @@ const { verifyToken, checkRole } = require('../middlewares/auth.middleware');
 router.get('/course/:courseId', lessonController.getLessonsByCourse);
 
 // Private: Quản lý bài học (Giảng viên & Admin)
-router.post('/', verifyToken, checkRole(['Teacher', 'Admin']), lessonController.createLesson);
-router.put('/:id', verifyToken, checkRole(['Teacher', 'Admin']), lessonController.updateLesson);
-router.delete('/:id', verifyToken, checkRole(['Teacher', 'Admin']), lessonController.deleteLesson);
+router.post('/', verifyToken, checkRole(['Giảng viên', 'Admin']), lessonController.createLesson);
+router.put('/:id', verifyToken, checkRole(['Giảng viên', 'Admin']), lessonController.updateLesson);
+router.delete('/:id', verifyToken, checkRole(['Giảng viên', 'Admin']), lessonController.deleteLesson);
 
 module.exports = router;

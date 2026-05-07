@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân - DCGLearn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: var(--light-bg);
+            color: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 15px;
+            border: 4px solid var(--white);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .info-group {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        .info-label {
+            font-weight: 700;
+            color: var(--text-gray);
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .info-value {
+            font-size: 18px;
+            color: var(--text-dark);
+        }
+        .profile-actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <div class="logo" onclick="window.location.href='dashboard.html'" style="cursor: pointer;">
+                <i class="fas fa-graduation-cap"></i>
+                <span>DCG<span>Learn</span></span>
+            </div>
+            <nav>
+                <a href="dashboard.html">Bảng điều khiển</a>
+                <div class="user-profile">
+                    <div class="user-dropdown">
+                        <button class="user-dropbtn" id="userMenuBtn">
+                            <i class="far fa-user-circle"></i>
+                            <span id="navUserName">Loading...</span>
+                            <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
+                        </button>
+                        <div class="dropdown-content" id="userDropdown">
+                            <a href="viewprofile.html"><i class="fas fa-user"></i> Hồ sơ của tôi</a>
+                            <a href="#" id="logoutBtn" style="color: #ff4d4f;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 id="profileName">Loading...</h2>
+                <span id="profileRole" class="tag">Loading...</span>
+            </div>
+
+            <div class="info-group">
+                <span class="info-label">Email</span>
+                <span class="info-value" id="profileEmail">Loading...</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">Mã người dùng</span>
+                <span class="info-value" id="profileId">Loading...</span>
+            </div>
+
+            <div class="profile-actions">
+                <button class="btn-primary" onclick="window.location.href='dashboard.html'" style="flex: 1;">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/user/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    const user = data.user;
+                    document.getElementById('profileName').textContent = user.name;
+                    document.getElementById('profileEmail').textContent = user.email;
+                    document.getElementById('profileRole').textContent = user.role;
+                    document.getElementById('profileId').textContent = '#' + user.id;
+                    document.getElementById('navUserName').textContent = user.name;
+                } else {
+                    alert('Lỗi: ' + data.message);
+                    if (response.status === 401) {
+                        localStorage.clear();
+                        window.location.href = 'index.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải hồ sơ:', error);
+            }
+
+            // Dropdown logic
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            if (userMenuBtn) {
+                userMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('show');
+                });
+            }
+            window.addEventListener('click', () => {
+                if (userDropdown && userDropdown.classList.contains('show')) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

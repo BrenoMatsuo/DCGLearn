@@ -1,5 +1,14 @@
 // 1. Cấu hình chung
 const API_URL = '/api'; // Dùng đường dẫn tương đối để tránh lỗi CORS khi chạy trên cùng Port
+async function fetchAPI(url, options = {}) {
+    const token = localStorage.getItem('token');
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...options.headers
+    };
+    return fetch(url, { ...options, headers });
+}
 
 // 2. Kiểm tra quyền truy cập (Auth Guard) cho trang Dashboard
 // Nếu file script.js này dùng chung cho toàn bộ web, ta cần kiểm tra trang hiện tại

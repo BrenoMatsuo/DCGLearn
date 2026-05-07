@@ -105,46 +105,7 @@
                             </div>
                         </div>
 
-                        <div class="form-row-half">
-                            <div class="input-group-vertical">
-                                <label>Môn học *</label>
-                                <select id="courseCategory" required>
-                                    <option value="" disabled selected>Chọn môn học</option>
-                                    <option value="Toán học">Toán học</option>
-                                    <option value="Vật lý">Vật lý</option>
-                                    <option value="Hóa học">Hóa học</option>
-                                    <option value="Tiếng Anh">Tiếng Anh</option>
-                                    <option value="Ngữ văn">Ngữ văn</option>
-                                    <option value="Khác">Khác</option>
-                                </select>
-                            </div>
-                            <div class="input-group-vertical">
-                                <label>Khối lớp *</label>
-                                <select id="courseGrade" required>
-                                    <option value="10">Lớp 10</option>
-                                    <option value="11">Lớp 11</option>
-                                    <option value="12">Lớp 12</option>
-                                    <option value="Chung">Chung</option>
-                                </select>
-                            </div>
-                        </div>
 
-                        <div class="input-group-vertical" style="width: 50%; padding-right: 10px;">
-                            <label>Mã định danh (Code)</label>
-                            <input type="text" id="courseCode" placeholder="MATH12-01">
-                        </div>
-                    </div>
-
-                    <div class="form-sidebar">
-                        <div class="input-group-vertical">
-                            <label>Hình ảnh khóa học</label>
-                            <div class="image-upload-box" onclick="document.getElementById('courseImage').click()">
-                                <i class="fas fa-cloud-upload-alt" style="font-size: 30px; color: #94a3b8;"></i>
-                                <p style="font-size: 13px; margin-top: 10px; color: #64748b;">Click để tải ảnh lên (JPG, PNG)</p>
-                                <input type="file" id="courseImage" hidden accept="image/*">
-                                <img id="imgPreview" src="" alt="Preview">
-                            </div>
-                        </div>
 
                         <div style="margin-top: 40px;">
                             <button type="submit" class="btn-primary" id="submitBtn" style="width: 100%; padding: 15px; font-size: 16px;">
@@ -161,120 +122,91 @@
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const user = JSON.parse(localStorage.getItem('user'));
-            const token = localStorage.getItem('token');
-            if (!user || !token) { window.location.href = 'index.html'; return; }
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = localStorage.getItem('token');
+        if (!user || !token) { window.location.href = 'index.html'; return; }
 
-            // Hiển thị tên
-            document.getElementById('navUserName').textContent = user.name || "Giảng viên";
+        document.getElementById('navUserName').textContent = user.name || "Giảng viên";
 
-            // Lấy ID từ URL nếu đang ở chế độ EDIT
-            const urlParams = new URLSearchParams(window.location.search);
-            const editId = urlParams.get('edit');
-            let currentImageBase64 = "";
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
 
-            // --- PHẦN 1: LOGIC FETCH DỮ LIỆU CŨ KHI EDIT ---
-            if (editId) {
-                document.getElementById('pageTitle').innerText = "Chỉnh sửa khóa học - DCGLearn";
-                document.getElementById('mainHeading').innerText = "Chỉnh sửa khóa học";
-                const submitBtn = document.getElementById('submitBtn');
-                submitBtn.innerText = "Lưu thay đổi";
+        // --- PHẦN 1: FETCH DỮ LIỆU CŨ KHI EDIT ---
+        if (editId) {
+            document.getElementById('pageTitle').innerText = "Chỉnh sửa khóa học - DCGLearn";
+            document.getElementById('mainHeading').innerText = "Chỉnh sửa khóa học";
+            document.getElementById('submitBtn').innerText = "Lưu thay đổi";
 
-                fetch(`/api/courses/${editId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        document.getElementById('courseName').value = data.title || "";
-                        document.getElementById('courseCode').value = data.code || "";
-                        
-                        // KHÔI PHỤC LOGIC: Đổ dữ liệu môn học cũ vào
-                        document.getElementById('courseCategory').value = data.category || "";
-                        
-                        document.getElementById('courseGrade').value = data.grade || "12";
-                        document.getElementById('courseDesc').value = data.description || "";
-                        document.getElementById('charCount').innerText = (data.description || "").length;
-                        
-                        if (data.image) {
-                            const preview = document.getElementById('imgPreview');
-                            preview.src = data.image;
-                            preview.style.display = 'block';
-                            currentImageBase64 = data.image; // Giữ lại ảnh cũ nếu không thay đổi
-                        }
-                    })
-                    .catch(err => console.error("Lỗi lấy thông tin khóa học:", err));
-            }
+            fetch(`/api/courses/${editId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error("Không tìm thấy khóa học");
+                    return res.json();
+                })
+                .then(data => {
+                    document.getElementById('courseName').value = data.title || "";
+                    document.getElementById('courseDesc').value = data.description || "";
+                    document.getElementById('charCount').innerText = (data.description || "").length;
+                })
+                .catch(err => {
+                    alert("Lỗi: " + err.message);
+                    window.location.href = 'manage-courses.html';
+                });
+        }
 
-            // --- PHẦN 2: XỬ LÝ ẢNH (GIỮ NGUYÊN) ---
-            document.getElementById('courseImage').addEventListener('change', function() {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        currentImageBase64 = e.target.result;
-                        const preview = document.getElementById('imgPreview');
-                        preview.src = currentImageBase64;
-                        preview.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // Đếm ký tự
-            document.getElementById('courseDesc').addEventListener('input', function() {
-                document.getElementById('charCount').innerText = this.value.length;
-            });
-
-            // --- PHẦN 3: SUBMIT (GỬI KÈM MÔN HỌC) ---
-            document.getElementById('courseForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('submitBtn');
-                
-                const courseData = {
-                    title: document.getElementById('courseName').value,
-                    code: document.getElementById('courseCode').value,
-                    
-                    // KHÔI PHỤC LOGIC: Gửi dữ liệu môn học lên server
-                    category: document.getElementById('courseCategory').value,
-                    
-                    grade: document.getElementById('courseGrade').value,
-                    description: document.getElementById('courseDesc').value,
-                    image: currentImageBase64,
-                    instructor: user.name // Đảm bảo instructor khớp
-                };
-
-                try {
-                    btn.disabled = true;
-                    btn.innerText = "Đang xử lý...";
-
-                    const method = editId ? 'PUT' : 'POST';
-                    const endpoint = editId ? `/api/courses/${editId}` : '/api/courses';
-
-                    const response = await fetch(endpoint, {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(courseData)
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok) {
-                        alert(editId ? "Cập nhật thành công!" : "Tạo khóa học thành công!");
-                        window.location.href = 'manage-courses.html';
-                    } else {
-                        alert("Lỗi: " + (result.message || "Không thể thực hiện."));
-                    }
-                } catch (error) {
-                    console.error(error);
-                    alert("Lỗi kết nối Server.");
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = editId ? "Lưu thay đổi" : "Hoàn tất & Xuất bản";
-                }
-            });
+        // --- PHẦN 2: ĐẾM KÝ TỰ ---
+        document.getElementById('courseDesc').addEventListener('input', function() {
+            document.getElementById('charCount').innerText = this.value.length;
         });
-    </script>
+
+        // --- PHẦN 3: SUBMIT ---
+        document.getElementById('courseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+
+            const courseData = {
+                title: document.getElementById('courseName').value.trim(),
+                description: document.getElementById('courseDesc').value.trim()
+            };
+
+            if (!courseData.title) { alert("Vui lòng nhập tên khóa học."); return; }
+            if (!courseData.description) { alert("Vui lòng nhập mô tả khóa học."); return; }
+
+            try {
+                btn.disabled = true;
+                btn.innerText = "Đang xử lý...";
+
+                const method = editId ? 'PUT' : 'POST';
+                const endpoint = editId ? `/api/courses/${editId}` : '/api/courses';
+
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(courseData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(editId ? "Cập nhật thành công!" : "Tạo khóa học thành công!");
+                    window.location.href = 'manage-courses.html';
+                } else {
+                    alert("Lỗi: " + (result.message || "Không thể thực hiện."));
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Lỗi kết nối Server.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = editId ? "Lưu thay đổi" : "Hoàn tất & Xuất bản";
+            }
+        });
+    });
+</script>
 </body>
 </html>

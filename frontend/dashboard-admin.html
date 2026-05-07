@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - DCGLearn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            margin-top: 40px;
+        }
+        .admin-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .user-table th, .user-table td {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .user-table th {
+            font-weight: 700;
+            color: var(--text-gray);
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .role-badge-admin {
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .role-admin { background: #fee2e2; color: #991b1b; }
+        .role-teacher { background: #fef9c3; color: #854d0e; }
+        .role-student { background: #dcfce7; color: #166534; }
+        
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>DCG<span>Learn</span></span>
+            </div>
+            <nav>
+                <a href="dashboard-admin.html" class="active">Quản trị</a>
+                <div class="user-profile">
+                    <div class="user-dropdown">
+                        <button class="user-dropbtn" id="userMenuBtn">
+                            <i class="far fa-user-circle"></i>
+                            <span id="navUserName">Admin</span>
+                            <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 5px;"></i>
+                        </button>
+                        <div class="dropdown-content" id="userDropdown">
+                            <a href="viewprofile.html"><i class="fas fa-user"></i> Hồ sơ của tôi</a>
+                            <a href="#" id="logoutBtn" style="color: #ff4d4f;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container admin-container">
+        <div class="admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title" style="margin-bottom: 0;">Quản lý người dùng</h2>
+                <div class="stats-mini" style="display: flex; gap: 20px;">
+                    <div><strong id="totalUsers">0</strong> Người dùng</div>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Họ tên</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (!token || user.role !== 'Admin') {
+                alert('Bạn không có quyền truy cập trang này.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            document.getElementById('navUserName').textContent = user.name;
+
+            try {
+                const response = await fetch('/api/user/all', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    const users = data.users;
+                    document.getElementById('totalUsers').textContent = users.length;
+                    const tbody = document.getElementById('userTableBody');
+                    tbody.innerHTML = '';
+
+                    users.forEach(u => {
+                        let roleClass = 'role-student';
+                        if (u.role === 'Admin') roleClass = 'role-admin';
+                        if (u.role === 'Teacher') roleClass = 'role-teacher';
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>#${u.id}</td>
+                            <td>${u.name}</td>
+                            <td>${u.email}</td>
+                            <td><span class="role-badge-admin ${roleClass}">${u.role}</span></td>
+                            <td class="action-btns">
+                                <button class="btn-outline btn-sm" onclick="editUser(${u.id})">
+                                    <i class="fas fa-user-edit"></i> Sửa
+                                </button>
+                                <button class="btn-outline btn-sm" style="color: #ff4d4f; border-color: #ff4d4f;" onclick="deleteUser(${u.id})">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải danh sách người dùng:', error);
+            }
+
+            // Dropdown logic
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            if (userMenuBtn) {
+                userMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('show');
+                });
+            }
+            window.addEventListener('click', () => {
+                if (userDropdown && userDropdown.classList.contains('show')) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                });
+            }
+        });
+
+        function editUser(id) {
+            window.location.href = `updatepw.html?id=${id}`;
+        }
+
+        async function deleteUser(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+                const token = localStorage.getItem('token');
+                try {
+                    const response = await fetch(`/api/user/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await response.json();
+                    alert(data.message);
+                    if (response.ok) {
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi xóa người dùng:', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -101,11 +101,9 @@
                 setTimeout(() => {
                     const userRole = (result.user.role || "").trim();
                     
-                    if (userRole === 'Giảng viên') {
+                    if (userRole === 'Teacher') {
                         window.location.href = '/dashboard-teacher';
-                    } else if (userRole === 'Học viên') {
-                        window.location.href = '/dashboard';
-                    } else {
+                    } else if (userRole === 'Student') {
                         window.location.href = '/dashboard';
                     }
                 }, 800);
@@ -133,9 +131,9 @@
                 const user = JSON.parse(userStr);
                 const userRole = (user.role || "").trim();
                 
-                if (userRole === 'Giảng viên') {
+                if (userRole === 'Teacher') {
                     window.location.href = '/dashboard-teacher';
-                } else if (userRole === 'Học viên') {
+                } else if (userRole === 'Student') {
                     window.location.href = '/dashboard';
                 }
             } catch (e) {

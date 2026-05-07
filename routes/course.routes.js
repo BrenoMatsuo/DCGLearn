@@ -8,8 +8,8 @@ router.get('/all', courseController.getAllCourses);
 
 // Private routes: Yêu cầu đăng nhập và đúng quyền Giảng viên hoặc Admin
 router.get('/:id', verifyToken, courseController.getCourseById);
-router.post('/', verifyToken, checkRole(['Teacher', 'Admin']), courseController.createCourse);
-router.put('/:id', verifyToken, checkRole(['Teacher', 'Admin']), courseController.updateCourse);
-router.delete('/:id', verifyToken, checkRole(['Teacher', 'Admin']), courseController.deleteCourse);
+router.post('/', verifyToken, checkRole(['Giảng viên', 'Admin']), courseController.createCourse);
+router.put('/:id', verifyToken, checkRole(['Giảng viên', 'Admin']), courseController.updateCourse);
+router.delete('/:id', verifyToken, checkRole(['Giảng viên', 'Admin']), courseController.deleteCourse);
 
 module.exports = router;

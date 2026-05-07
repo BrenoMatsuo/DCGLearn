@@ -96,27 +96,25 @@
                 const grid = document.getElementById('courseManageGrid');
                 try {
                     // Gọi API my-courses (Đã có verifyToken để lọc đúng người tạo)
-                    const response = await fetch('/api/courses/my-courses', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    
-                    const courses = await response.json();
+                    const response = await fetch('/api/courses/all', {
+    headers: { 'Authorization': `Bearer ${token}` }
+});
+const data = await response.json();
+const courses = (data.courses || []).filter(c => c.instructor_id === user.id);
 
                     if (courses && courses.length > 0) {
                         grid.innerHTML = courses.map(course => `
                             <div class="course-card">
                                 <div class="card-img" style="background-image: url('${course.image || 'https://via.placeholder.com/300x150'}')"></div>
                                 <div class="card-body">
-                                    <span class="tag">Mã: ${course.code}</span>
+                                    <span class="tag">ID: ${course.course_id}</span>
                                     <h3 style="margin: 10px 0;">${course.title}</h3>
                                     <p style="color: #64748b; font-size: 14px; height: 40px; overflow: hidden;">${course.description}</p>
                                     <div class="admin-controls">
-                                        <button class="btn-outline" onclick="editCourse(${course.id})">
+                                        <button class="btn-outline" onclick="editCourse(${course.course_id})">
                                             <i class="fas fa-edit"></i> Sửa
                                         </button>
-                                        <button class="btn-outline" style="color: #ef4444; border-color: #fee2e2;" onclick="deleteCourse(${course.id})">
+                                        <button class="btn-outline" style="color: #ef4444; border-color: #fee2e2;" onclick="deleteCourse(${course.course_id})">
                                             <i class="fas fa-trash"></i> Xóa
                                         </button>
                                     </div>
